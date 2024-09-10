@@ -114,7 +114,12 @@ choose_prompt = ChatPromptTemplate.from_messages(
             """
             Use ONLY the following pre-existing answers to answer the user's question.
 
-            Pick the most recent and highest-scoring answer (the one that's more helpful) and use it.   
+            Pick the most recent and highest-scoring answer (the one that's more helpful) and use it. 
+
+            If “I don't know” is selected as the answer, display the message below.
+            The language will be the same as that used by humans.
+
+            “The answer to this question was not found on the website.”  
 
             Site sources and return the sources of the answers as they are, do not change them.
 
