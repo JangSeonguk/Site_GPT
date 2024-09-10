@@ -221,7 +221,6 @@ if valid_api_key:
         )
         with st.chat_message("ai"):
             result = chain.invoke(query).content.replace("$", "\$")
-            st.markdown(result)
             save_message(result, "ai")
 
 else:
