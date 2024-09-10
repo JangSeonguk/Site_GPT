@@ -22,11 +22,12 @@ class ChatCallbackHandler(BaseCallbackHandler):
         self.message_box = st.empty()
 
     def on_llm_end(self, *args, **kwargs):
-        save_message(self.message, "ai")
+        # save_message(self.message, "ai")
+        pass
 
     def on_llm_new_token(self, token: str, *args, **kwargs):
         self.message += token
-        self.message_box.markdown(self.message)
+        # self.message_box.markdown(self.message)
 
 
 def check_api_key(api_key):
@@ -114,7 +115,7 @@ choose_prompt = ChatPromptTemplate.from_messages(
             Use ONLY the following pre-existing answers to answer the user's question.
 
             Pick the most recent and highest-scoring answer (the one that's more helpful) and use it.   
-               
+
             Site sources and return the sources of the answers as they are, do not change them.
 
             Answers: {answers}
