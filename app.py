@@ -1,19 +1,17 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Quiz_GPT Home",
+    page_title="Site GPT Home",
     page_icon="🤖",
 )
 
 
 with st.sidebar:
-    st.link_button(
-        "Open Git", "https://github.com/JangSeonguk/Quiz_GPT/blob/main/app.py"
-    )
+    st.link_button("Open Git", "https://github.com/JangSeonguk/Site_GPT")
     choice = st.selectbox(
         "Choose what you want to use.",
         (
-            "Welcome Home",
+            "Home",
             "Code",
         ),
     )
@@ -30,11 +28,11 @@ if choice == "Code":
 else:
     st.markdown(
         """
-    # Hello!
+    # Home
                 
-    Welcome to **Quiz GPT**
+    :red[**Site GPT**]에 오신 것을 환영합니다.
 
-    Quiz GPT allows you to create quizzes from Wikipedia or documents that you have.
+    웹사이트에 대해 궁금한 내용이 있다면 Site GPT의 챗봇에게 질문해보세요.
 
     """
     )

@@ -6,9 +6,56 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 import streamlit as st
+import openai
+from langchain.callbacks.base import BaseCallbackHandler
+
+st.set_page_config(
+    page_title="SiteGPT",
+    page_icon="🖥️",
+)
+
+
+class ChatCallbackHandler(BaseCallbackHandler):
+    message = ""
+
+    def on_llm_start(self, *args, **kwargs):
+        self.message = ""
+        self.message_box = st.empty()
+
+    def on_llm_end(self, *args, **kwargs):
+        pass
+
+    def on_llm_new_token(self, token, *args, **kwargs):
+        self.message += token
+
+
+def check_api_key(api_key):
+    openai.api_key = api_key
+    try:
+        openai.Model.list()
+        st.success("유효한 API Key 가 확인되었습니다.")
+        return True
+
+    except openai.error.AuthenticationError:
+        st.error("Open API key 값이 유효하지 않습니다. 확인 후 재입력해주세요..")
+        return False
+
+
+with st.sidebar:
+    valid_api_key = False
+    api_key = st.text_input("Enter your Open API Key", type="password")
+    file = ""
+    if api_key:
+        valid_api_key = check_api_key(api_key)
+
 
 llm = ChatOpenAI(
     temperature=0.1,
+    streaming=True,
+    callbacks=[
+        ChatCallbackHandler(),
+    ],
+    openai_api_key=api_key,
 )
 
 answers_prompt = ChatPromptTemplate.from_template(
@@ -44,12 +91,6 @@ def get_answers(inputs):
     docs = inputs["docs"]
     question = inputs["question"]
     answers_chain = answers_prompt | llm
-    # answers = []
-    # for doc in docs:
-    #     result = answers_chain.invoke(
-    #         {"question": question, "context": doc.page_content}
-    #     )
-    #     answers.append(result.content)
     return {
         "question": question,
         "answers": [
@@ -74,7 +115,10 @@ choose_prompt = ChatPromptTemplate.from_messages(
 
             Use the answers that have the highest score (more helpful) and favor the most recent ones.
 
-            Cite sources and return the sources of the answers as they are, do not change them.
+            Site sources and return the sources of the answers as they are, do not change them.
+            
+            Examples:
+            출처 : https://developers.cloudflare.com/vectorize/best-practices/create-indexes/
 
             Answers: {answers}
             """,
@@ -124,6 +168,11 @@ def load_website(url):
     loader = SitemapLoader(
         url,
         parsing_function=parse_page,
+        filter_urls=[
+            r"^(.*\/ai-gateway\/).*",
+            r"^(.*\/vectorize\/).*",
+            r"^(.*\/worker-ai\/).*",
+        ],
     )
     loader.requests_per_second = 2
     docs = loader.load_and_split(text_splitter=splitter)
@@ -131,45 +180,58 @@ def load_website(url):
     return vector_store.as_retriever()
 
 
-st.set_page_config(
-    page_title="SiteGPT",
-    page_icon="🖥️",
-)
+def save_message(message, role):
+    st.session_state["messages"].append({"message": message, "role": role})
 
 
-st.markdown(
-    """
+def send_message(message, role, save=True):
+    with st.chat_message(role):
+        st.markdown(message)
+    if save:
+        save_message(message, role)
+
+
+def paint_history():
+    for message in st.session_state["messages"]:
+        send_message(
+            message["message"],
+            message["role"],
+            save=False,
+        )
+
+
+if valid_api_key:
+    xml = "https://developers.cloudflare.com/sitemap-0.xml"
+    retriever = load_website(xml)
+    send_message(
+        "안녕하세요, Cloudflare에 대한 질문에 답변해드립니다.", "ai", save=False
+    )
+    paint_history()
+    query = st.chat_input("Cloudflare에 대한 질문을 입력해주세요.")
+
+    if query:
+        send_message(query, "human")
+        chain = (
+            {
+                "docs": retriever,
+                "question": RunnablePassthrough(),
+            }
+            | RunnableLambda(get_answers)
+            | RunnableLambda(choose_answer)
+        )
+        with st.chat_message("ai"):
+            result = chain.invoke(query).content.replace("$", "\$")
+            st.markdown(result)
+            save_message(result, "ai")
+
+else:
+    st.session_state["messages"] = []
+    st.markdown(
+        """
     # SiteGPT
             
-    Ask questions about the content of a website.
-            
-    Start by writing the URL of the website on the sidebar.
+웹사이트 URL을 입력하면 해당 웹사이트를 분석하여 질문에 답변하는 챗봇이 연결됩니다.\n
+좌측 사이드바에 url을 입력해주세요.
+
 """
-)
-
-
-with st.sidebar:
-    url = st.text_input(
-        "Write down a URL",
-        placeholder="https://example.com",
     )
-
-
-if url:
-    if ".xml" not in url:
-        with st.sidebar:
-            st.error("Please write down a Sitemap URL.")
-    else:
-        retriever = load_website(url)
-        query = st.text_input("Ask a question to the website.")
-        if query:
-            chain = (
-                {
-                    "docs": retriever,
-                    "question": RunnablePassthrough(),
-                }
-                | RunnableLambda(get_answers)
-                | RunnableLambda(choose_answer)
-            )
-            result = chain.invoke(query)
-            st.markdown(result.content.replace("$", "\$"))
