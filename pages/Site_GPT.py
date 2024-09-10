@@ -224,7 +224,9 @@ if valid_api_key:
             | RunnableLambda(choose_answer)
         )
         with st.chat_message("ai"):
-            result = chain.invoke(query).content.replace("$", "\$")
+            result = (
+                chain.invoke(query).content.replace("$", "\$").replace("Answer:", " ")
+            )
             st.markdown(result)
             save_message(result, "ai")
 
