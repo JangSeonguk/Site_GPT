@@ -19,14 +19,14 @@ class ChatCallbackHandler(BaseCallbackHandler):
     message = ""
 
     def on_llm_start(self, *args, **kwargs):
-        self.message = ""
         self.message_box = st.empty()
 
     def on_llm_end(self, *args, **kwargs):
-        pass
+        save_message(self.message, "ai")
 
-    def on_llm_new_token(self, token, *args, **kwargs):
+    def on_llm_new_token(self, token: str, *args, **kwargs):
         self.message += token
+        self.message_box.markdown(self.message)
 
 
 def check_api_key(api_key):
@@ -119,6 +119,7 @@ choose_prompt = ChatPromptTemplate.from_messages(
             Answer using the same language as the question.
             Example:
             I can't find the answer to that question on the website.
+            해당 질문에 대한 답변을 웹사이트에서 찾을 수 없습니다. 
 
             Site sources and return the sources of the answers as they are, do not change them.
             
