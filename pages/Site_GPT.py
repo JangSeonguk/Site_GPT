@@ -113,12 +113,9 @@ choose_prompt = ChatPromptTemplate.from_messages(
             """
             Use ONLY the following pre-existing answers to answer the user's question.
 
-            Use the answers that have the highest score (more helpful) and favor the most recent ones.
-
+            Pick the most recent and highest-scoring answer (the one that's more helpful) and use it.   
+               
             Site sources and return the sources of the answers as they are, do not change them.
-            
-            Examples:
-            출처 : https://developers.cloudflare.com/vectorize/best-practices/create-indexes/
 
             Answers: {answers}
             """,
