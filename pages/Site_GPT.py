@@ -115,12 +115,6 @@ choose_prompt = ChatPromptTemplate.from_messages(
 
             Use the answers that have the highest score (more helpful) and favor the most recent ones.
 
-            If the 'answer' is 'I don't know', answer as follows.
-            Answer using the same language as the question.
-            Example:
-            I can't find the answer to that question on the website.
-            해당 질문에 대한 답변을 웹사이트에서 찾을 수 없습니다. 
-
             Site sources and return the sources of the answers as they are, do not change them.
             
             Examples:
