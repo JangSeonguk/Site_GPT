@@ -118,8 +118,9 @@ choose_prompt = ChatPromptTemplate.from_messages(
 
             If “I don't know” is selected as the answer, display the message below.
             The language will be the same as that used by humans.
-
-            “The answer to this question was not found on the website.”  
+            example:
+            "The answer to this question was not found on the website."
+            "해당 질문에 대한 답변을 웹사이트에서 찾을 수 없습니다."
 
             Site sources and return the sources of the answers as they are, do not change them.
 
