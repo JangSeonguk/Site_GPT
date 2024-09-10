@@ -176,7 +176,7 @@ def load_website(url):
     )
     loader.requests_per_second = 2
     docs = loader.load_and_split(text_splitter=splitter)
-    vector_store = FAISS.from_documents(docs, OpenAIEmbeddings())
+    vector_store = FAISS.from_documents(docs, OpenAIEmbeddings(openai_api_key=api_key))
     return vector_store.as_retriever()
 
 
@@ -231,7 +231,7 @@ else:
     # SiteGPT
             
 웹사이트 URL을 입력하면 해당 웹사이트를 분석하여 질문에 답변하는 챗봇이 연결됩니다.\n
-좌측 사이드바에 url을 입력해주세요.
+먼저 유효한 OpenAI API Key 값을 입력해주세요.
 
 """
     )
